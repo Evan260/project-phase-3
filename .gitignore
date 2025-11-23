@@ -5,9 +5,6 @@ vendor/
 *.env
 .env*
 
-# Configuration
-config/database.php
-
 # IDE files
 .vscode/
 .idea/
