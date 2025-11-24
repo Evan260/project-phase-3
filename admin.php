@@ -4,6 +4,7 @@ require_once 'classes/User.php';
 require_once 'classes/Order.php';
 require_once 'classes/Equipment.php';
 require_once 'classes/Sample.php';
+require_once 'classes/Email.php';
 
 $user = new User();
 
@@ -19,20 +20,52 @@ $userId = $_SESSION['user_id'];
 // Initialize classes
 $order = new Order();
 $equipment = new Equipment();
+$email = new Email();
 
 // Handle approve/reject actions
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['approve_order'])) {
         $orderId = intval($_POST['order_id']);
+        // Get order with customer info before approving
+        $orderData = $order->getOrderWithCustomer($orderId);
+
         if ($order->approveOrder($orderId, $userId)) {
             $message = 'Order approved successfully';
+
+            // Send email notification to customer
+            if ($orderData && !empty($orderData['customer_email'])) {
+                $emailSent = $email->sendOrderApprovalNotification(
+                    $orderData['customer_email'],
+                    $orderData['customer_name'],
+                    $orderData['order_number']
+                );
+                if ($emailSent) {
+                    $message .= ' - Email notification sent to customer';
+                }
+            }
         }
     } elseif (isset($_POST['reject_order'])) {
         $orderId = intval($_POST['order_id']);
         $reason = trim($_POST['rejection_reason'] ?? 'No reason provided');
+        // Get order with customer info before rejecting
+        $orderData = $order->getOrderWithCustomer($orderId);
+
         if ($order->rejectOrder($orderId, $reason)) {
             $message = 'Order rejected';
+
+            // Send email notification to customer
+            if ($orderData && !empty($orderData['customer_email'])) {
+                $emailSent = $email->sendOrderRejectionNotification(
+                    $orderData['customer_email'],
+                    $orderData['customer_name'],
+                    $orderData['order_number'],
+                    $reason
+                );
+                if ($emailSent) {
+                    $message .= ' - Email notification sent to customer';
+                }
+            }
         }
     }
 }

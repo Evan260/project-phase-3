@@ -40,6 +40,17 @@ class Order {
         return $stmt->fetch();
     }
 
+    public function getOrderWithCustomer($orderId) {
+        $stmt = $this->db->prepare(
+            "SELECT o.*, u.full_name as customer_name, u.email as customer_email, u.company_name
+             FROM orders o
+             JOIN users u ON o.customer_id = u.id
+             WHERE o.id = ?"
+        );
+        $stmt->execute([$orderId]);
+        return $stmt->fetch();
+    }
+
     public function updateOrderStatus($orderId, $status) {
         $stmt = $this->db->prepare("UPDATE orders SET status = ? WHERE id = ?");
         return $stmt->execute([$status, $orderId]);

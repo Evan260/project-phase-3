@@ -119,14 +119,15 @@ $equipment = new Equipment();
 
         <?php elseif ($userRole === 'administrator'): ?>
             <!-- Administrator Dashboard -->
+            <?php $pendingOrders = $order->getPendingOrders(); ?>
             <div class="dashboard-grid">
                 <div class="dashboard-card">
                     <h2>Pending Approvals</h2>
                     <p>Orders waiting for approval</p>
                     <div class="card-stats">
-                        <span class="stat">0 Pending</span>
+                        <span class="stat"><?php echo count($pendingOrders); ?> Pending</span>
                     </div>
-                    <a href="#" class="btn btn-secondary">Review Orders</a>
+                    <a href="admin.php?tab=approvals" class="btn btn-primary">Review Orders</a>
                 </div>
 
                 <div class="dashboard-card">
@@ -148,9 +149,43 @@ $equipment = new Equipment();
                 </div>
 
                 <div class="dashboard-card full-width">
-                    <h2>Recent Activity</h2>
+                    <h2>Pending Orders</h2>
                     <div class="activity-list">
-                        <p>No recent activity</p>
+                        <?php if (empty($pendingOrders)): ?>
+                            <p>No pending orders</p>
+                        <?php else: ?>
+                            <table class="dashboard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Company</th>
+                                        <th>Submitted</th>
+                                        <th>Priority</th>
+                                        <th>Samples</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($pendingOrders as $po): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($po['order_number']); ?></td>
+                                        <td><?php echo htmlspecialchars($po['customer_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($po['company_name'] ?? '-'); ?></td>
+                                        <td><?php echo date('Y-m-d H:i', strtotime($po['created_at'])); ?></td>
+                                        <td>
+                                            <span class="priority-badge priority-<?php echo $po['priority']; ?>">
+                                                <?php echo ucfirst($po['priority']); ?>
+                                            </span>
+                                        </td>
+                                        <td><?php echo $po['sample_count']; ?></td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                            <div style="margin-top: 15px;">
+                                <a href="admin.php?tab=approvals" class="btn btn-primary">Go to Approvals</a>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
