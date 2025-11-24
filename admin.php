@@ -1,0 +1,336 @@
+<?php
+require_once 'config/database.php';
+require_once 'classes/User.php';
+require_once 'classes/Order.php';
+require_once 'classes/Equipment.php';
+require_once 'classes/Sample.php';
+
+$user = new User();
+
+// Check if user is logged in and is administrator
+if (!$user->isLoggedIn() || $user->getRole() !== 'administrator') {
+    header('Location: index.php');
+    exit;
+}
+
+$userName = $_SESSION['user_name'];
+$userId = $_SESSION['user_id'];
+
+// Initialize classes
+$order = new Order();
+$equipment = new Equipment();
+
+// Get current tab
+$currentTab = isset($_GET['tab']) ? $_GET['tab'] : 'approvals';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - <?php echo APP_NAME; ?></title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <?php include 'includes/header.php'; ?>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <h2>Administration</h2>
+            <nav class="admin-nav">
+                <a href="?tab=approvals" class="<?php echo $currentTab === 'approvals' ? 'active' : ''; ?>">
+                    Pending Approvals
+                </a>
+                <a href="?tab=equipment" class="<?php echo $currentTab === 'equipment' ? 'active' : ''; ?>">
+                    Manage Equipment
+                </a>
+                <a href="?tab=samples" class="<?php echo $currentTab === 'samples' ? 'active' : ''; ?>">
+                    Manage Samples
+                </a>
+                <a href="?tab=users" class="<?php echo $currentTab === 'users' ? 'active' : ''; ?>">
+                    Manage Users
+                </a>
+                <a href="?tab=reports" class="<?php echo $currentTab === 'reports' ? 'active' : ''; ?>">
+                    Performance Reports
+                </a>
+            </nav>
+        </aside>
+
+        <main class="admin-content">
+            <?php if ($currentTab === 'approvals'): ?>
+                <!-- Pending Approvals Section -->
+                <section class="admin-section">
+                    <h1>Pending Approvals</h1>
+                    <p class="section-desc">Review and approve or reject submitted orders.</p>
+                    
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Submitted</th>
+                                    <th>Priority</th>
+                                    <th>Samples</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="empty-state">No pending orders</td>
+                                </tr>
+                                <!-- Prototype row example (commented out)
+                                <tr>
+                                    <td>ORD-20251124-0001</td>
+                                    <td>Test Customer</td>
+                                    <td>2025-11-24 10:30</td>
+                                    <td><span class="badge badge-standard">Standard</span></td>
+                                    <td>3</td>
+                                    <td class="actions">
+                                        <button class="btn btn-small btn-success">Approve</button>
+                                        <button class="btn btn-small btn-danger">Reject</button>
+                                        <button class="btn btn-small btn-secondary">View</button>
+                                    </td>
+                                </tr>
+                                -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            <?php elseif ($currentTab === 'equipment'): ?>
+                <!-- Manage Equipment Section -->
+                <section class="admin-section">
+                    <h1>Manage Equipment</h1>
+                    <p class="section-desc">Configure equipment settings, processing times, and schedules.</p>
+                    
+                    <div class="admin-actions-bar">
+                        <button class="btn btn-primary">Add Equipment</button>
+                    </div>
+
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Processing Time</th>
+                                    <th>Warmup Time</th>
+                                    <th>Break Interval</th>
+                                    <th>Daily Capacity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $equipmentList = $equipment->getAllEquipment();
+                                if (empty($equipmentList)):
+                                ?>
+                                <tr>
+                                    <td colspan="8" class="empty-state">No equipment configured</td>
+                                </tr>
+                                <?php else: ?>
+                                    <?php foreach ($equipmentList as $eq): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($eq['name']); ?></td>
+                                        <td><?php echo htmlspecialchars($eq['equipment_type']); ?></td>
+                                        <td><?php echo $eq['processing_time_per_sample']; ?> min/sample</td>
+                                        <td><?php echo $eq['warmup_time']; ?> min</td>
+                                        <td><?php echo $eq['break_interval']; ?> samples</td>
+                                        <td><?php echo $eq['daily_capacity']; ?> samples</td>
+                                        <td>
+                                            <span class="badge <?php echo $eq['is_available'] ? 'badge-success' : 'badge-danger'; ?>">
+                                                <?php echo $eq['is_available'] ? 'Available' : 'Unavailable'; ?>
+                                            </span>
+                                        </td>
+                                        <td class="actions">
+                                            <button class="btn btn-small btn-secondary">Edit</button>
+                                            <button class="btn btn-small btn-warning">Log Delay</button>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            <?php elseif ($currentTab === 'samples'): ?>
+                <!-- Manage Samples Section -->
+                <section class="admin-section">
+                    <h1>Manage Samples</h1>
+                    <p class="section-desc">View and manage sample processing status.</p>
+                    
+                    <div class="filter-bar">
+                        <select class="form-control">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="preparing">Preparing</option>
+                            <option value="ready">Ready</option>
+                            <option value="testing">Testing</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <select class="form-control">
+                            <option value="">All Types</option>
+                            <option value="ore">Ore</option>
+                            <option value="liquid">Liquid</option>
+                        </select>
+                        <button class="btn btn-secondary">Filter</button>
+                    </div>
+
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Sample ID</th>
+                                    <th>Order #</th>
+                                    <th>Type</th>
+                                    <th>Compound</th>
+                                    <th>Quantity</th>
+                                    <th>Prep Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="8" class="empty-state">No samples found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            <?php elseif ($currentTab === 'users'): ?>
+                <!-- Manage Users Section -->
+                <section class="admin-section">
+                    <h1>Manage Users</h1>
+                    <p class="section-desc">Create, modify, and manage user accounts and permissions.</p>
+                    
+                    <div class="admin-actions-bar">
+                        <button class="btn btn-primary">Add User</button>
+                        <button class="btn btn-secondary">Import CSV</button>
+                    </div>
+
+                    <div class="filter-bar">
+                        <input type="text" class="form-control" placeholder="Search by name or email...">
+                        <select class="form-control">
+                            <option value="">All Roles</option>
+                            <option value="customer">Customer</option>
+                            <option value="technician">Technician</option>
+                            <option value="administrator">Administrator</option>
+                        </select>
+                        <select class="form-control">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        <button class="btn btn-secondary">Search</button>
+                    </div>
+
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Company</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Last Login</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7" class="empty-state">Loading users...</td>
+                                </tr>
+                                <!-- Prototype rows would be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            <?php elseif ($currentTab === 'reports'): ?>
+                <!-- Performance Reports Section -->
+                <section class="admin-section">
+                    <h1>Performance Reports</h1>
+                    <p class="section-desc">Generate and view reports on orders, revenue, and system performance.</p>
+                    
+                    <div class="report-cards">
+                        <div class="report-card">
+                            <h3>Orders Report</h3>
+                            <p>View order statistics, processing times, and completion rates.</p>
+                            <div class="report-options">
+                                <select class="form-control">
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="quarter">This Quarter</option>
+                                    <option value="year">This Year</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                                <button class="btn btn-primary">Generate</button>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <h3>Revenue Report</h3>
+                            <p>View payment statistics, revenue trends, and financial summaries.</p>
+                            <div class="report-options">
+                                <select class="form-control">
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="quarter">This Quarter</option>
+                                    <option value="year">This Year</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                                <button class="btn btn-primary">Generate</button>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <h3>Equipment Performance</h3>
+                            <p>View equipment utilization, delays, and maintenance history.</p>
+                            <div class="report-options">
+                                <select class="form-control">
+                                    <option value="">All Equipment</option>
+                                    <?php foreach ($equipment->getAllEquipment() as $eq): ?>
+                                    <option value="<?php echo $eq['id']; ?>"><?php echo htmlspecialchars($eq['name']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button class="btn btn-primary">Generate</button>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <h3>Queue Analytics</h3>
+                            <p>View queue statistics, wait times, and processing efficiency.</p>
+                            <div class="report-options">
+                                <select class="form-control">
+                                    <option value="all">All Queues</option>
+                                    <option value="standard">Standard Queue</option>
+                                    <option value="priority">Priority Queue</option>
+                                </select>
+                                <button class="btn btn-primary">Generate</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Output Area -->
+                    <div class="report-output">
+                        <p class="empty-state">Select a report type and click Generate to view results.</p>
+                    </div>
+                </section>
+
+            <?php endif; ?>
+        </main>
+    </div>
+
+    <?php include 'includes/footer.php'; ?>
+    <script src="js/main.js"></script>
+</body>
+</html>

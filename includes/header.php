@@ -17,10 +17,10 @@
                     <a href="#">Queue</a>
                 <?php elseif ($_SESSION['user_role'] === 'administrator'): ?>
                     <a href="dashboard.php">Dashboard</a>
-                    <a href="#">Approvals</a>
-                    <a href="#">Users</a>
-                    <a href="#">Equipment</a>
-                    <a href="#">Reports</a>
+                    <a href="admin.php?tab=approvals">Approvals</a>
+                    <a href="admin.php?tab=users">Users</a>
+                    <a href="admin.php?tab=equipment">Equipment</a>
+                    <a href="admin.php?tab=reports">Reports</a>
                 <?php endif; ?>
             <?php endif; ?>
         </nav>
