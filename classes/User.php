@@ -65,7 +65,7 @@ class User {
     }
 
     public function isLoggedIn() {
-        return isset($_SESSION['user_id']);
+        return isset($_SESSION['user_id']) && isset($_SESSION['user_name']) && isset($_SESSION['user_role']);
     }
 
     // User Management Methods

@@ -26,8 +26,10 @@
         </nav>
 
         <div class="user-menu">
-            <?php if (isset($_SESSION['user_name'])): ?>
-                <span class="user-name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <?php if (isset($_SESSION['user_name'])): ?>
+                    <span class="user-name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
+                <?php endif; ?>
                 <a href="logout.php" class="btn btn-small">Logout</a>
             <?php endif; ?>
         </div>
