@@ -85,7 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     <div class="login-container">
         <div class="login-box register-box">
             <div class="logo">
-                <h1><?php echo APP_NAME; ?></h1>
+                <a href="index.php" style="text-decoration: none; color: inherit;">
+                    <h1><?php echo APP_NAME; ?></h1>
+                </a>
                 <p>Create Your Account</p>
             </div>
 
@@ -98,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             <?php if ($success): ?>
                 <div class="alert alert-success">
                     <?php echo htmlspecialchars($success); ?>
-                    <br><a href="index.php">Click here to login</a>
+                    <br><a href="login.php">Click here to login</a>
                 </div>
             <?php endif; ?>
 
@@ -185,7 +187,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             </form>
 
             <div class="login-footer">
-                <p>Already have an account? <a href="index.php">Login here</a></p>
+                <p>Already have an account? <a href="login.php">Login here</a></p>
+                <p style="margin-top: 10px;"><a href="index.php">&larr; Back to Home</a></p>
             </div>
         </div>
     </div>

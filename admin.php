@@ -10,7 +10,7 @@ $user = new User();
 
 // Check if user is logged in and is administrator
 if (!$user->isLoggedIn() || $user->getRole() !== 'administrator') {
-    header('Location: index.php');
+    header('Location: login.php');
     exit;
 }
 

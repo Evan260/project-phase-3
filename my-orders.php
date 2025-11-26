@@ -7,7 +7,7 @@ $user = new User();
 
 // Check if user is logged in and is customer
 if (!$user->isLoggedIn() || $user->getRole() !== 'customer') {
-    header('Location: index.php');
+    header('Location: login.php');
     exit;
 }
 
