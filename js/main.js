@@ -1,5 +1,3 @@
-// GlobenTech - Main JavaScript File
-
 document.addEventListener('DOMContentLoaded', function() {
     // Form validation
     const forms = document.querySelectorAll('form');

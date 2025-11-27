@@ -9,7 +9,7 @@ $user = new User();
 
 // Check if user is logged in
 if (!$user->isLoggedIn()) {
-    header('Location: index.php');
+    header('Location: login.php');
     exit;
 }
 

@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if ($success && strpos($success, 'account has been created') !== false): ?>
                 <div class="alert alert-success">
                     <?php echo htmlspecialchars($success); ?>
-                    <br><a href="index.php">Click here to login</a>
+                    <br><a href="login.php">Click here to login</a>
                 </div>
             <?php elseif ($success): ?>
                 <div class="alert alert-success">
