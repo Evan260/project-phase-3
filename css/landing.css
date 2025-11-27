@@ -165,6 +165,7 @@
 .btn-large {
     align-content: center;
     font-size: 16px;
+    width: 200px;
 }
 
 .btn-large svg {
@@ -687,22 +688,6 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     position: relative;
     overflow: hidden;
-}
-
-.service-image::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.3;
-}
-
-.service-image.ore-sample::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23fff' d='M30 70L50 30l20 40H30z'/%3E%3Ccircle cx='25' cy='75' r='8' fill='%23fff'/%3E%3Ccircle cx='75' cy='75' r='6' fill='%23fff'/%3E%3Ccircle cx='50' cy='80' r='10' fill='%23fff'/%3E%3C/svg%3E");
 }
 
 .service-image.copper-sample {
